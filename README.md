@@ -29,6 +29,8 @@ The code divides the From and To Date into portions size you enter and merge eve
 
 **Flowchart** 
 
+The other thing that makes it reusable is that uses Information Schema to get all the Non Unique Column names and the internal metadata table for unique Column names. The joins and window functions are majorly made by the hash keys generated in the child tables and hence optimizes the code a little further.
+
 ![image](https://user-images.githubusercontent.com/48508718/198382310-4d6e8ede-6e8d-4003-81e2-236b6bb10c60.png)
 
 The future steps to this code is a set of assertions to confirm if the data looks as expected. Also, depending on the use case we could either swap the final table created by this process or use a part of it as needed after renaming and droping the processing columns like hashing columns, min_source_eff_date, etc.
