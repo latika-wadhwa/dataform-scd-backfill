@@ -1,3 +1,20 @@
+
+//  # Copyright 2020 Google LLC
+//  #
+//  # Licensed under the Apache License, Version 2.0 (the "License");
+//  # you may not use this file except in compliance with the License.
+//  # You may obtain a copy of the License at
+//  #
+//  #      http://www.apache.org/licenses/LICENSE-2.0
+//  #
+//  # Unless required by applicable law or agreed to in writing, software
+//  # distributed under the License is distributed on an "AS IS" BASIS,
+//  # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  # See the License for the specific language governing permissions and
+//  # limitations under the License.
+
+
+
 var getDaysArray = function(start, end, portion) {
     end_dt=new Date(start);
       for(var arr=[],dt=new Date(start); dt<new Date(end); dt.setDate(dt.getDate()+portion)){
@@ -41,7 +58,7 @@ var getDaysArray = function(start, end, portion) {
   SELECT primary_key_column_name  
       FROM ${dataform.projectConfig.defaultSchema}.table_to_unique
       WHERE 
-      table_name =  "covid_scd2_final"  and table_catalog = "${dataform.projectConfig.vars.src_database}" and table_schema = "${dataform.projectConfig.vars.src_schema}"
+      table_name =  "${dataform.projectConfig.vars.target_table}"  and table_catalog = "${dataform.projectConfig.vars.target_database}" and table_schema = "${dataform.projectConfig.vars.target_schema}"
   )
   SELECT STRING_AGG(primary_key_column_name) AS columns FROM selected_columns
   );
@@ -114,7 +131,6 @@ var getDaysArray = function(start, end, portion) {
           select %s, %s, ${dataform.projectConfig.vars.timestampfield}, row_number() OVER (PARTITION BY %s, %s ,grp order by ${dataform.projectConfig.vars.timestampfield} asc) as row_num,
           grp,
           min(${dataform.projectConfig.vars.timestampfield}) over (PARTITION BY %s,%s,grp) as ${dataform.projectConfig.vars.start_from_column_name},
-          -- lead(${dataform.projectConfig.vars.timestampfield}) over (partition by %s order by ${dataform.projectConfig.vars.timestampfield} asc) as ${dataform.projectConfig.vars.end_at_column_name},
           CASE 
             WHEN max(${dataform.projectConfig.vars.timestampfield}) over (PARTITION BY %s) = (
               SELECT max(${dataform.projectConfig.vars.timestampfield}) from ${dataform.projectConfig.vars.src_schema}.${dataform.projectConfig.vars.src_table} where ${dataform.projectConfig.vars.timestampfield} >= cast(substr('${daylist}',0,10) as Date)
@@ -160,7 +176,7 @@ var getDaysArray = function(start, end, portion) {
     if (this.count ==0)
     {
       operate("scd2_merge_"+this.count).dependencies("scd2_" + this.count).queries(`
-      CREATE OR REPLACE TABLE ${dataform.projectConfig.vars.target_schema}.${dataform.projectConfig.vars.src_table}_final_table
+      CREATE OR REPLACE TABLE ${dataform.projectConfig.vars.target_schema}.${dataform.projectConfig.vars.target_table}_final_table
        PARTITION BY ${dataform.projectConfig.vars.timestampfield}
       as (SELECT *, cast(null as DATE) as min_eff_date_source from ${dataform.projectConfig.vars.target_schema}.${dataform.projectConfig.vars.target_table}_scd2_${this.count});
      
@@ -173,30 +189,17 @@ var getDaysArray = function(start, end, portion) {
   .dependencies("scd2_merge_" + (this.count-1))
   .dependencies("scd2_" + this.count)
   .queries(`
-  DECLARE target_unique STRING;
   DECLARE target_non_unique STRING;
-  
-  
-  SET target_unique = (
-  WITH selected_columns as (
-  SELECT primary_key_column_name  
-      FROM dataform_staging.table_to_unique
-      WHERE 
-      table_name =  "${dataform.projectConfig.vars.src_table}_final_table"  and table_catalog = "latika-experiments" and table_schema = "${dataform.projectConfig.vars.target_schema}"
-  )
-  SELECT STRING_AGG(primary_key_column_name) AS columns FROM selected_columns
-  );
-  
   
   SET target_non_unique = (
   WITH selected_columns as (
   SELECT column_name 
       FROM latika-experiments.${dataform.projectConfig.vars.target_schema}.INFORMATION_SCHEMA.COLUMNS
       WHERE 
-      table_name =  "${dataform.projectConfig.vars.src_table}_final_table" and column_name not in (SELECT primary_key_column_name  
+      table_name =  "${dataform.projectConfig.vars.target_table}_final_table" and column_name not in (SELECT primary_key_column_name  
       FROM dataform_staging.table_to_unique
       WHERE 
-      table_name =  "${dataform.projectConfig.vars.src_table}_final_table"  and table_catalog = "latika-experiments" and table_schema = "${dataform.projectConfig.vars.target_schema}"
+      table_name =  "${dataform.projectConfig.vars.target_table}_final_table"  and table_catalog = "latika-experiments" and table_schema = "${dataform.projectConfig.vars.target_schema}"
   )  and column_name <> "min_eff_date_source" 
   )
   SELECT STRING_AGG(column_name) AS columns FROM selected_columns
@@ -204,25 +207,25 @@ var getDaysArray = function(start, end, portion) {
   
   
   
-  UPDATE ${dataform.projectConfig.vars.target_schema}.${dataform.projectConfig.vars.src_table}_final_table s
+  UPDATE ${dataform.projectConfig.vars.target_schema}.${dataform.projectConfig.vars.target_table}_final_table s
   SET s.min_eff_date_source = DATE_ADD(b.min_eff_date, INTERVAL -1 DAY)
   FROM (
     select min(a.min_eff_date) as min_eff_date, ${dataform.projectConfig.vars.target_hash_unique_col_name} from (
   
     select 
-  min(${dataform.projectConfig.vars.start_from_column_name}) as min_eff_date, ${dataform.projectConfig.vars.target_hash_unique_col_name} from (select * EXCEPT (min_eff_date_source) from  ${dataform.projectConfig.vars.target_schema}.${dataform.projectConfig.vars.src_table}_final_table where ${dataform.projectConfig.vars.end_at_column_name} is null 
+  min(${dataform.projectConfig.vars.start_from_column_name}) as min_eff_date, ${dataform.projectConfig.vars.target_hash_unique_col_name} from (select * EXCEPT (min_eff_date_source) from  ${dataform.projectConfig.vars.target_schema}.${dataform.projectConfig.vars.target_table}_final_table where ${dataform.projectConfig.vars.end_at_column_name} is null 
   union ALL
   select *  EXCEPT (r) from (select *, row_number() over (partition by ${dataform.projectConfig.vars.target_hash_unique_col_name} order by ${dataform.projectConfig.vars.start_from_column_name}) as r from  ${dataform.projectConfig.vars.target_schema}.${dataform.projectConfig.vars.target_table}_scd2_${this.count} ) where r < 3 ) group by ${dataform.projectConfig.vars.target_hash_unique_col_name}, ${dataform.projectConfig.vars.target_hash_non_unique_col_name}
    
    except DISTINCT
-   select ${dataform.projectConfig.vars.start_from_column_name}, ${dataform.projectConfig.vars.target_hash_unique_col_name} from  ${dataform.projectConfig.vars.target_schema}.${dataform.projectConfig.vars.src_table}_final_table where ${dataform.projectConfig.vars.end_at_column_name} is null 
+   select ${dataform.projectConfig.vars.start_from_column_name}, ${dataform.projectConfig.vars.target_hash_unique_col_name} from  ${dataform.projectConfig.vars.target_schema}.${dataform.projectConfig.vars.target_table}_final_table where ${dataform.projectConfig.vars.end_at_column_name} is null 
   )  a
     group by ${dataform.projectConfig.vars.target_hash_unique_col_name}
   ) b
   WHERE s.${dataform.projectConfig.vars.target_hash_unique_col_name}=b.${dataform.projectConfig.vars.target_hash_unique_col_name} and ${dataform.projectConfig.vars.end_at_column_name} is null;
   
   EXECUTE IMMEDIATE format("""
-  MERGE  ${dataform.projectConfig.vars.target_schema}.${dataform.projectConfig.vars.src_table}_final_table  as T
+  MERGE  ${dataform.projectConfig.vars.target_schema}.${dataform.projectConfig.vars.target_table}_final_table  as T
   USING (SELECT %s
   FROM ${dataform.projectConfig.vars.target_schema}.${dataform.projectConfig.vars.target_table}_scd2_${this.count}
   ) AS s
