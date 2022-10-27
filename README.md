@@ -24,8 +24,6 @@ Key variables in this code is the Source Table details (Catalog, schema and Tabl
 
 The code divides the From and To Date into portions size you enter and merge everything together. So in case of the data being huge for each partion, we could process it for daily all parallel (in case we want to limit, the concurrency could be used to define the max parallel tasks). And in case of smaller partition size we could do all at once. 
 
-![Uploading image.png…]()
-
 
 **Flowchart** 
 ![image](https://user-images.githubusercontent.com/48508718/198382310-4d6e8ede-6e8d-4003-81e2-236b6bb10c60.png)
