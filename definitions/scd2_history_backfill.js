@@ -217,7 +217,7 @@ var getDaysArray = function(start, end, no_of_days) {
           )
       )  
   """,src_unique, src_non_unique, src_non_unique, src_unique, src_unique, src_non_unique_proc, src_unique, src_non_unique_proc, src_unique, src_unique, src_unique, src_unique, src_non_unique, src_unique,src_unique, src_unique, src_unique, src_unique, src_non_unique_proc, src_unique, src_unique,src_non_unique_proc,src_unique,src_non_unique_proc, src_unique, src_unique, src_unique,src_non_unique, src_unique, src_unique, src_non_unique_proc, src_unique, src_non_unique_proc, src_unique, src_unique, src_unique, src_unique,src_unique,src_non_unique, src_unique, src_unique, src_unique, src_unique, src_non_unique_proc, src_unique, src_unique, src_non_unique_proc,src_unique, src_non_unique_proc )
-  `),
+  `).tags(["scd2_backfill"]),
   
         ++this.count;
       
@@ -353,7 +353,7 @@ select %s ,null as min_eff_date_source  from ${dataform.projectConfig.vars.targe
 )
   """, target_columns, target_columns);
 
-  `)
+  `).tags(["scd2_backfill"])
     }
   }
 
