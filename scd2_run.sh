@@ -36,7 +36,7 @@ fi
 printf """
 Executing the following dataform command:
 ************************************************************
-dataform run %s %s --vars=subjectArea=${SA}
+dataform run %s %s --vars=src_database=${src_database},src_schema=${src_schema},src_table=${src_table},target_database=${target_database},target_schema=${target_schema},target_table=${target_table},target_hash_unique_col_name=${target_hash_unique_col_name},target_hash_non_unique_col_name=${target_hash_non_unique_col_name},timestampfield=${timestampfield},start_from_column_name=${start_from_column_name},end_at_column_name=${end_at_column_name},from_date=${from_date},to_date=${to_date},portion_size=${portion_size}
 ************************************************************
 """ "${all_dataform_tags}" "${all_dataform_actions}"
 
