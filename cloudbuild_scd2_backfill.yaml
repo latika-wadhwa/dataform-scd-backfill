@@ -25,7 +25,7 @@ steps:
     env:
       - PROJECT_ID=${_PROJECT_ID}
       - BQ_LOCATION=${_BQ_LOCATION}
-      - DATAFORM_TAGS=scd2
+      - DATAFORM_TAGS=scd2_backfill
       - src_database=latika-experiments,
       - src_schema=dataform,
       - src_table=covid_staging,
