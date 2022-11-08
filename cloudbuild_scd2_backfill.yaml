@@ -42,7 +42,5 @@ steps:
       - portion_size=31
 options:
   logging: CLOUD_LOGGING_ONLY
-  pool:
-    name: 'projects/dataform-test-privatepool/locations/us-central1/workerPools/test'
 
 
