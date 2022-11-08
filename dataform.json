@@ -4,8 +4,8 @@
     "warehouse": "bigquery",
     "defaultDatabase": "latika-experiments",
     "defaultLocation": "US",
-    "concurrentQueryLimit": 3,
-      "vars": {
+    "concurrentQueryLimit": 1,
+        "vars": {
         "src_database":"latika-experiments",
         "src_schema":"dataform",   
         "src_table":"covid_staging", 
@@ -19,7 +19,8 @@
         "end_at_column_name": "exp_date",
         "from_date": "2021-09-01",
         "to_date": "2021-12-01",
-        "portion_size": "31"
+        "no_of_days": "31"
      }
   }
+  
   
